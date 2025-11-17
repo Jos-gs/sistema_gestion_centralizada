@@ -1,0 +1,119 @@
+/* Archivo: css/login.css */
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #1565c0;
+    font-family: 'Segoe UI', 'Roboto', 'Open Sans', Tahoma, Geneva, Verdana, sans-serif;
+    color: #212121;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
+}
+
+.login-container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    border: 1px solid #e0e0e0;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    color: #1565c0;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+    font-weight: 600;
+    border-bottom: 2px solid #1565c0;
+    padding-bottom: 12px;
+}
+
+.input-group {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #424242;
+    font-size: 14px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #212121;
+    font-size: 15px;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.input-group input:focus {
+    border-color: #1565c0;
+    outline: none;
+    background-color: #ffffff;
+}
+
+.input-group input::placeholder {
+    color: #9e9e9e;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #1565c0;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background: #0d47a1;
+}
+
+button:active {
+    background: #0a3d91;
+}
+
+button:disabled {
+    background: #bdbdbd;
+    cursor: not-allowed;
+}
+
+#login-error {
+    text-align: center;
+    margin-top: 20px;
+    padding: 12px;
+    background: #ffebee;
+    border-radius: 6px;
+    font-weight: 500;
+    color: #c62828;
+    border: 1px solid #ef5350;
+}
+
+.hidden {
+    display: none;
+}

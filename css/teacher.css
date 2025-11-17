@@ -1,0 +1,585 @@
+/* Archivo: css/teacher.css */
+
+/* --- Animación de Fondo (como el login) --- */
+@keyframes background-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', 'Roboto', 'Open Sans', Tahoma, Geneva, Verdana, sans-serif;
+    color: #212121;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f5f5f5;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* --- Header --- */
+header {
+    background: #1565c0;
+    padding: 18px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #ffffff;
+    position: relative;
+    z-index: 10;
+}
+
+header h1 {
+    font-size: 1.6em;
+    color: #ffffff;
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+header button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+}
+
+header button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* --- Contenedor Principal del Dashboard --- */
+.dashboard-container {
+    flex-grow: 1; /* Ocupa el espacio restante */
+    display: flex;
+    max-width: 1600px; /* Ancho máximo aumentado */
+    margin: 30px auto;
+    gap: 30px; /* Espacio entre paneles */
+    padding: 0 30px;
+}
+
+/* --- Paneles (Chatbot y Distribución) --- */
+.panel {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    animation: panelFadeIn 0.3s ease-out;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes panelFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.panel h2 {
+    font-size: 1.6em;
+    color: #1565c0;
+    margin-bottom: 20px;
+    margin-top: 0;
+    border-bottom: 2px solid #1565c0;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.panel p {
+    line-height: 1.6;
+}
+
+/* --- Chatbot Panel --- */
+.chatbot-panel {
+    flex: 2; /* Ocupa 2/3 del espacio */
+    height: fit-content; /* Ajusta al contenido */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.chatbot-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(46, 204, 113, 0.05) 100%);
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.chatbot-panel > * {
+    position: relative;
+    z-index: 1;
+}
+
+.chat-box {
+    height: 500px;
+    max-height: 500px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: #1565c0 #f5f5f5;
+}
+
+.chat-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-box::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+    background: #1565c0;
+    border-radius: 4px;
+}
+
+.chat-box::-webkit-scrollbar-thumb:hover {
+    background: #0d47a1;
+}
+
+.chat-message {
+    margin-bottom: 15px;
+    padding: 12px 18px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+    animation: messageSlideIn 0.3s ease-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-message.bot {
+    background: #e3f2fd;
+    color: #1565c0;
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+    border-left: 3px solid #1565c0;
+}
+
+.chat-message.user {
+    background: #1565c0;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+    border-right: 3px solid #0d47a1;
+}
+
+.chat-message p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.chat-message.user p {
+    color: white;
+}
+
+.chat-message.bot p {
+    color: #1565c0;
+}
+
+.chat-message small {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.75em;
+    opacity: 0.7;
+    text-align: right;
+}
+
+.chat-message.user small {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.chat-message.bot small {
+    color: rgba(21, 101, 192, 0.7);
+}
+
+/* Mensajes con sugerencias rápidas */
+.quick-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed rgba(52, 152, 219, 0.3);
+}
+
+.quick-suggestion-btn {
+    background: #e3f2fd;
+    border: 1px solid #1565c0;
+    color: #1565c0;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.2s ease;
+    font-weight: 500;
+}
+
+.quick-suggestion-btn:hover {
+    background: #1565c0;
+    color: white;
+}
+
+/* Mensajes con información educativa */
+.chat-message.educational {
+    background: #e3f2fd;
+    border-left: 3px solid #1565c0;
+    padding: 15px 20px;
+    position: relative;
+    color: #1565c0;
+}
+
+.chat-message.educational p {
+    color: #1565c0;
+}
+
+/* Indicador de escritura */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 15px;
+    background: #e3f2fd;
+    border-radius: 6px;
+    max-width: 70px;
+    margin-bottom: 15px;
+    border: 1px solid #bbdefb;
+}
+
+.typing-indicator span {
+    width: 6px;
+    height: 6px;
+    background: #1565c0;
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.chat-input-container input {
+    flex-grow: 1;
+    padding: 12px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #212121;
+    font-size: 15px;
+    transition: border-color 0.2s ease;
+}
+
+.chat-input-container input:focus {
+    border-color: #1565c0;
+    outline: none;
+}
+
+.chat-input-container input::placeholder {
+    color: #9e9e9e;
+}
+
+.chat-input-container button {
+    background: #1565c0;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.chat-input-container button:hover {
+    background: #0d47a1;
+}
+
+.chat-input-container button:active {
+    transform: translateY(0);
+}
+
+.chat-input-container button:disabled {
+    background: #5d6d7e;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+button:disabled {
+    background-color: #5d6d7e;
+    cursor: not-allowed;
+}
+
+/* --- Panel de Distribución --- */
+.distribution-panel {
+    flex: 1; /* Ocupa 1/3 del espacio */
+    position: relative; /* Para la animación de fondo */
+    overflow: hidden; /* Para que la animación no se salga */
+}
+
+/* Animación de fondo suave para el panel de distribución */
+.distribution-panel::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(52,152,219,0.1) 0%, transparent 70%);
+    animation: rotateBackground 20s linear infinite;
+    opacity: 0.3;
+}
+
+@keyframes rotateBackground {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+
+.distribution-panel h2 {
+    color: #1565c0; /* Azul institucional */
+}
+
+/* Drag and Drop Area */
+#drop-area {
+    border: 2px dashed #1565c0;
+    border-radius: 6px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 20px;
+    background: #e3f2fd;
+    transition: background-color 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+#drop-area:hover {
+    background: #bbdefb;
+}
+
+#drop-area.highlight {
+    background: #90caf9;
+    border-color: #0d47a1;
+}
+
+.file-info {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    font-size: 0.9em;
+    border: 1px solid #e0e0e0;
+    color: #424242;
+    position: relative;
+    z-index: 1;
+}
+
+.file-info strong {
+    color: #1565c0;
+    font-weight: 600;
+}
+
+/* Controles de Distribución */
+.distribution-controls label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #424242;
+    position: relative;
+    z-index: 1;
+    font-size: 14px;
+}
+
+.distribution-controls select {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: white;
+    color: #212121;
+    font-size: 15px;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231565c0%22%20d%3D%22M287%2C114.7L154.5%2C247.3c-4.5%2C4.5-12.4%2C4.5-16.9%2C0L5.4%2C114.7c-4.5-4.5-4.5-12.4%2C0-16.9l10.6-10.6c4.5-4.5%2C12.4-4.5%2C16.9%2C0l110.1%2C110.1L260.1%2C87.2c4.5-4.5%2C12.4-4.5%2C16.9%2C0l10.6%2C10.6C291.5%2C102.3%2C291.5%2C110.2%2C287%2C114.7z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    position: relative;
+    z-index: 1;
+    transition: border-color 0.2s ease;
+}
+
+.distribution-controls select:focus {
+    border-color: #1565c0;
+    outline: none;
+}
+
+
+.distribute-btn {
+    width: 100%;
+    background: #1565c0;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+    margin-top: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.distribute-btn:hover {
+    background: #0d47a1;
+}
+
+.distribute-btn:disabled {
+    background: #bdbdbd;
+    cursor: not-allowed;
+}
+
+/* Mensajes de Alerta */
+.message-alert {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.message-alert.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #4caf50;
+    border-left: 3px solid #4caf50;
+}
+
+.message-alert.error {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef5350;
+    border-left: 3px solid #e53935;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .dashboard-container {
+        flex-direction: column;
+        padding: 0 15px;
+        margin: 20px auto;
+    }
+    header h1 {
+        font-size: 1.5em;
+    }
+    .panel {
+        padding: 25px;
+        min-height: unset; /* Desactiva altura mínima en móviles */
+    }
+    .chatbot-panel {
+        order: 2; /* Pone el chatbot abajo en móviles */
+    }
+    .distribution-panel {
+        order: 1; /* Pone la distribución arriba en móviles */
+    }
+}
+
+/* Archivo: css/teacher.css */
+
+/* --- Estilos para el botón de Eliminar Documento --- */
+.file-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(52, 73, 94, 0.5); /* Separador visual */
+}
+
+#remove-file-btn {
+    background-color: #95a5a6; /* Gris neutro */
+    color: #2c3e50;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.1s;
+    font-size: 0.9em;
+}
+
+#remove-file-btn:hover {
+    background-color: #c0392b; /* Rojo más oscuro al pasar el ratón */
+    color: white;
+}

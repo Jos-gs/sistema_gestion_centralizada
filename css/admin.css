@@ -1,0 +1,532 @@
+/* Archivo: css/admin.css */
+
+/* --- Animación y Base (Misma que login.css) --- */
+@keyframes background-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', 'Roboto', 'Open Sans', Tahoma, Geneva, Verdana, sans-serif;
+    color: #212121;
+    min-height: 100vh;
+    background: #f5f5f5;
+    line-height: 1.6;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* --- Header (Barra Superior) --- */
+header {
+    background: #ffffff;
+    padding: 18px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid #e0e0e0;
+    color: #212121;
+    position: sticky; 
+    top: 0;
+    z-index: 50;
+}
+
+header h1 {
+    font-size: 1.6em;
+    color: #424242;
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+header button {
+    background: #f5f5f5;
+    color: #424242;
+    padding: 8px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+header button:hover {
+    background: #eeeeee;
+    border-color: #bdbdbd;
+}
+
+/* --- Contenedor Principal (Sidebar + Contenido) --- */
+.main-container {
+    display: flex;
+    flex-grow: 1;
+    max-width: 1600px;
+    margin: 0 auto; 
+}
+
+/* --- Sidebar (Barra de Navegación Lateral) --- */
+.sidebar {
+    width: 250px;
+    background: #1565c0;
+    padding: 0;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    border-right: none;
+    min-height: calc(100vh - 65px); 
+    position: sticky; 
+    top: 65px;
+    z-index: 10;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Scrollbar personalizado para sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Header del sidebar */
+.sidebar-header {
+    padding: 25px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 10px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h3 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1.3em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.sidebar-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.75em;
+    margin-top: 5px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sidebar p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8em;
+    padding: 0 20px 15px;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    font-weight: 400;
+}
+
+/* Navegación del sidebar */
+.sidebar-nav {
+    padding: 10px 0;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 14px 20px;
+    text-decoration: none;
+    margin: 2px 12px;
+    transition: background-color 0.2s ease;
+    font-weight: 500;
+    border-radius: 6px;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.sidebar-nav a.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-weight: 600;
+    border-left: 3px solid #ffffff;
+}
+
+/* Iconos en la navegación */
+.sidebar-nav a > span:first-child {
+    font-size: 1.2em;
+    margin-right: 12px;
+    width: 22px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sidebar-nav a > span:last-child {
+    flex: 1;
+}
+
+/* --- Contenido Principal --- */
+.content {
+    flex-grow: 1;
+    padding: 35px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1;
+}
+
+.content h2 {
+    color: #424242; 
+    margin-top: 0;
+    font-size: 1.8em;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.content p {
+    color: #616161;
+    line-height: 1.6;
+    margin-bottom: 18px;
+    font-size: 0.95em;
+}
+
+/* --- Estilos de Tablas y Contenedores (Registros / Usuarios) --- */
+#history-container, #users-list-container, #consultas-container {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+    animation: panelFadeIn 0.3s ease-out;
+    position: relative;
+}
+
+@keyframes panelFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.history-table, .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.history-table th, .users-table th {
+    background: #f5f5f5;
+    color: #424242;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    letter-spacing: 0.3px;
+}
+
+.history-table td, .users-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #212121;
+    background: white;
+}
+
+.history-table tr:hover, .users-table tr:hover {
+    background: #fafafa;
+    transition: background-color 0.2s ease;
+}
+
+/* Contenedor de controles */
+.controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background: #fafafa;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Botón de Agregar Usuario */
+#add-user-btn {
+    background: #1e88e5;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+#add-user-btn:hover {
+    background: #1565c0;
+}
+
+/* Botones de Acción de Usuario */
+.action-btn {
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 6px 10px;
+    transition: all 0.2s ease;
+    margin-left: 5px;
+}
+
+.edit-user-btn {
+    color: #f57c00;
+    border-color: #ffb74d;
+}
+.edit-user-btn:hover {
+    background: #fff3e0;
+    border-color: #ff9800;
+}
+
+.delete-user-btn {
+    color: #e53935;
+    border-color: #ef5350;
+}
+.delete-user-btn:hover {
+    background: #ffebee;
+    border-color: #e53935;
+}
+
+.view-consulta-btn {
+    color: #3498db;
+    border-color: rgba(52, 152, 219, 0.3);
+}
+.view-consulta-btn:hover {
+    background: rgba(52, 152, 219, 0.2);
+    color: #2980b9;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.resolve-consulta-btn {
+    color: #2ecc71;
+    border-color: rgba(46, 204, 113, 0.3);
+}
+.resolve-consulta-btn:hover {
+    background: rgba(46, 204, 113, 0.2);
+    color: #27ae60;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+}
+
+/* --- MODAL (Ventana Emergente) --- */
+
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none; 
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.2s;
+    border: 1px solid #e0e0e0;
+    position: relative;
+}
+
+.modal-content h3 {
+    color: #424242;
+    margin-top: 0;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 1.3em;
+}
+
+/* Estilos de input idénticos al login */
+.modal-content input, .modal-content select {
+    width: calc(100% - 20px);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fafafa;
+    color: #212121;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.modal-content input:focus, .modal-content select:focus {
+    border-color: #1e88e5;
+    box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+    outline: none;
+    background-color: white;
+}
+
+.input-group {
+    margin-bottom: 18px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: #1565c0;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.modal-footer .confirm-btn {
+    background: #1e88e5;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+}
+.modal-footer .confirm-btn:hover {
+    background: #1565c0;
+}
+
+.modal-footer .cancel-btn {
+    background: #f5f5f5;
+    color: #424242;
+    padding: 10px 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+}
+.modal-footer .cancel-btn:hover {
+    background: #eeeeee;
+}
+
+.reset-password-btn {
+    width: 100%;
+    background: #ff9800;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+}
+
+.reset-password-btn:hover {
+    background: #f57c00;
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-20px) scale(0.95); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+/* Estilos para grupos de días en registros */
+.day-group {
+    margin-bottom: 25px;
+    background: #fafafa;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.day-group h3 {
+    color: #424242;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .main-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        position: relative;
+        top: 0;
+    }
+    
+    .controls-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+}
