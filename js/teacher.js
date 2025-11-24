@@ -93,6 +93,9 @@ async function distributeDocument() {
     distributeBtn.style.backgroundColor = '#5d6d7e';
     showAlert('', '');
 
+    let response = null;
+    let success = false;
+
     try {
         // Crear FormData para enviar el archivo
         const formData = new FormData();
@@ -100,7 +103,7 @@ async function distributeDocument() {
         formData.append('filename', filename);
         formData.append('target_classroom', target);
 
-        const response = await fetch(`${API_ENDPOINT}?action=distribute`, {
+        response = await fetch(`${API_ENDPOINT}?action=distribute`, {
             method: 'POST',
             body: formData
         });
@@ -115,6 +118,7 @@ async function distributeDocument() {
             // removeFile({ stopPropagation: () => {} }); 
             
             distributeBtn.style.backgroundColor = '#27ae60';
+            success = true;
         } else {
             showAlert(`❌ Error al distribuir: ${result.error || 'Fallo desconocido.'}`, 'error');
             distributeBtn.style.backgroundColor = '#e74c3c';
@@ -126,7 +130,7 @@ async function distributeDocument() {
     } finally {
         distributeBtn.disabled = false;
         distributeBtn.innerText = "Distribuir a Aula";
-        if (!response || !response.ok) { 
+        if (!success && (!response || !response.ok)) { 
              distributeBtn.style.backgroundColor = '#3498db';
         }
     }
