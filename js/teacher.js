@@ -87,7 +87,6 @@ async function distributeDocument() {
 
     const target = document.getElementById('classroom-select').value;
     const filename = selectedFile.name;
-    const file_url = `/uploads/${filename}`; 
 
     distributeBtn.disabled = true;
     distributeBtn.innerText = "Enviando Tarea...";
@@ -95,16 +94,21 @@ async function distributeDocument() {
     showAlert('', '');
 
     try {
+        // Crear FormData para enviar el archivo
+        const formData = new FormData();
+        formData.append('document_file', selectedFile);
+        formData.append('filename', filename);
+        formData.append('target_classroom', target);
+
         const response = await fetch(`${API_ENDPOINT}?action=distribute`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ filename, file_url, target_classroom: target })
+            body: formData
         });
 
         const result = await response.json();
 
         if (response.ok) {
-            showAlert(`✅ Documento distribuido a ${target}.`, 'success');
+            showAlert(`✅ Documento distribuido a ${target}. Script PowerShell generado y ejecutado.`, 'success');
             
             // LA LÍNEA DE ELIMINACIÓN FUE COMENTADA/QUITADA PERMANENTEMENTE. 
             // El archivo PERMANECE visible y cargado.

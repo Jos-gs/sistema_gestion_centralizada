@@ -17,7 +17,11 @@ $API_ENDPOINT = $API_ENDPOINT ?? 'api_handler.php';
 <body>
     <header>
         <h1>🔧 CIST - Panel de Administración</h1>
-        <div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div id="datetime-display" style="text-align: right; color: #424242; font-size: 13px;">
+                <div id="date-display" style="font-weight: 500; margin-bottom: 2px;"></div>
+                <div id="time-display" style="font-weight: 600; font-size: 15px; color: #1565c0;"></div>
+            </div>
             <span style="margin-right: 20px;">
                 Bienvenido, <strong style="color: #3498db;"><?php echo $full_name; ?></strong> 
                 (<span style="font-weight: 500; color: #bdc3c7;"><?php echo htmlspecialchars($username); ?></span>)
@@ -63,6 +67,33 @@ $API_ENDPOINT = $API_ENDPOINT ?? 'api_handler.php';
 
     <script>
         const API_SERVER_ENDPOINT = "<?php echo $API_ENDPOINT; ?>";
+        
+        // Función para actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const dateDisplay = document.getElementById('date-display');
+            const timeDisplay = document.getElementById('time-display');
+            
+            // Formatear fecha
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            const dateString = now.toLocaleDateString('es-ES', options);
+            dateDisplay.textContent = dateString;
+            
+            // Formatear hora
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            timeDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // Actualizar inmediatamente y luego cada segundo
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
     </script>
     <script src="js/admin.js"></script>
 </body>

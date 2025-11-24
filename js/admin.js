@@ -31,7 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const mainContent = document.getElementById('main-content');
 const navLinks = document.querySelectorAll('.sidebar-nav a');
-const API_ENDPOINT = API_SERVER_ENDPOINT || 'api_handler.php'; 
+const API_ENDPOINT = API_SERVER_ENDPOINT || 'api_handler.php';
+
+// Función para obtener el username desde la URL
+function getCurrentUsername() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('user') || '';
+} 
 
 // --- Control de Navegación Lateral ---
 function loadContent(view) {
@@ -790,11 +796,18 @@ async function handleExecuteScript(id) {
         return;
     }
     
+    // Obtener el username del administrador desde la URL
+    const username = getCurrentUsername();
+    if (!username) {
+        alert('❌ Error: No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.');
+        return;
+    }
+    
     try {
         const response = await fetch(`${API_ENDPOINT}?action=execute_powershell_script`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: id })
+            body: JSON.stringify({ id: id, username: username })
         });
         
         const result = await response.json();

@@ -9,12 +9,38 @@ require_once __DIR__ . '/database.php';
 
 // --- FUNCIÓN DE LOGIN (Acción: login) ---
 function handleLogin($data) {
+    header('Content-Type: application/json');
+    
+    if (empty($data) || !isset($data['username']) || !isset($data['password'])) {
+        http_response_code(400);
+        echo json_encode(["error" => "Usuario y contraseña son requeridos.", "received_data" => $data]);
+        return;
+    }
+    
     $conn = connectDB();
-    $username = $conn->real_escape_string($data['username']);
+    if (!$conn) {
+        http_response_code(500);
+        echo json_encode(["error" => "Error de conexión a la base de datos."]);
+        return;
+    }
+    
+    $username = trim($conn->real_escape_string($data['username']));
     $password = $data['password'];
+    
+    if (empty($username)) {
+        http_response_code(400);
+        echo json_encode(["error" => "El nombre de usuario no puede estar vacío."]);
+        return;
+    }
 
     $sql = "SELECT username, nombre_completo, password_hash, cargo FROM usuarios WHERE username = '$username'";
     $result = $conn->query($sql);
+
+    if ($result === false) {
+        http_response_code(500);
+        echo json_encode(["error" => "Error en la consulta: " . $conn->error]);
+        return;
+    }
 
     if ($result && $result->num_rows === 1) {
         $user = $result->fetch_assoc();
@@ -39,32 +65,160 @@ function handleLogin($data) {
 }
 
 // --- FUNCIÓN DE DISTRIBUCIÓN (Acción: distribute) ---
-function handleDistribution($data) {
+function handleDistribution() {
+    header('Content-Type: application/json');
     $conn = connectDB();
 
-    $filename = $conn->real_escape_string($data['filename']);
-    $file_url = $conn->real_escape_string($data['file_url']);
-    $target = $conn->real_escape_string($data['target_classroom']);
-
-    if (empty($filename) || empty($target)) {
+    // Verificar que se haya subido un archivo
+    if (!isset($_FILES['document_file']) || $_FILES['document_file']['error'] !== UPLOAD_ERR_OK) {
         http_response_code(400);
-        echo json_encode(["error" => "Faltan parámetros."]);
+        echo json_encode(["error" => "No se ha subido ningún archivo o hubo un error en la carga."]);
         return;
     }
-    
+
+    $file = $_FILES['document_file'];
+    $target = isset($_POST['target_classroom']) ? $conn->real_escape_string($_POST['target_classroom']) : 'Aula 1';
+    $filename = isset($_POST['filename']) ? $conn->real_escape_string($_POST['filename']) : $file['name'];
+
+    // Crear directorio para documentos distribuidos
+    $baseDir = __DIR__ . '/distribucion/docs';
+    if (!file_exists($baseDir)) {
+        mkdir($baseDir, 0777, true);
+    }
+
+    // Generar nombre único para el archivo
+    $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $uniqueFileName = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($file['name']));
+    $filePath = $baseDir . '/' . $uniqueFileName;
+
+    // Mover el archivo al directorio
+    if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+        http_response_code(500);
+        echo json_encode(["error" => "Error al guardar el archivo en el servidor"]);
+        return;
+    }
+
+    // Ruta relativa para guardar en la BD
+    $file_url = 'distribucion/docs/' . $uniqueFileName;
+
+    // Guardar registro en la base de datos
     $sql = "INSERT INTO registros_documentos (documento_nombre, documento_url, salon_destino, estado) 
             VALUES ('$filename', '$file_url', '$target', 'PENDIENTE')";
             
     if ($conn->query($sql) === TRUE) {
+        $task_id = $conn->insert_id;
+        
+        // Generar script PowerShell
+        $script = generateDistributionScript($filePath, $filename, $target);
+        
+        // Guardar el script en un archivo temporal
+        $scriptPath = __DIR__ . '/temp_distribution_' . $task_id . '.ps1';
+        file_put_contents($scriptPath, $script);
+        
+        // Ejecutar el script PowerShell
+        $output = [];
+        $returnCode = 0;
+        $command = "powershell.exe -ExecutionPolicy Bypass -File \"$scriptPath\" 2>&1";
+        exec($command, $output, $returnCode);
+        
+        // Actualizar estado según el resultado
+        $estado = ($returnCode === 0) ? 'DISTRIBUIDO' : 'FALLIDO';
+        $updateSql = "UPDATE registros_documentos SET estado = '$estado' WHERE id = $task_id";
+        $conn->query($updateSql);
+        
+        // Limpiar archivo temporal del script
+        if (file_exists($scriptPath)) {
+            unlink($scriptPath);
+        }
+        
         http_response_code(200);
         echo json_encode([
             "message" => "Tarea de distribución registrada con éxito",
-            "task_id" => $conn->insert_id
+            "task_id" => $task_id,
+            "estado" => $estado,
+            "script_output" => implode("\n", $output)
         ]);
     } else {
+        // Si falla la inserción, eliminar el archivo subido
+        unlink($filePath);
         http_response_code(500);
         echo json_encode(["error" => "Error al registrar la tarea en BD: " . $conn->error]);
     }
+}
+
+// --- Función para generar script PowerShell de distribución ---
+function generateDistributionScript($archivoRuta, $nombreArchivo, $salon) {
+    // Mapeo de salones a nombres de PCs
+    $salonComputers = [
+        'Aula 1' => ['PC1', 'PC2', 'PC3', 'PC4'],
+        'Aula 2' => ['PC1', 'PC2', 'PC3', 'PC4'],
+        'Aula 3' => ['PC1', 'PC2', 'PC3', 'PC4'],
+        'Aula 4' => ['PC1', 'PC2', 'PC3', 'PC4']
+    ];
+    
+    $computers = isset($salonComputers[$salon]) ? $salonComputers[$salon] : ['PC1', 'PC2', 'PC3', 'PC4'];
+    
+    // Escapar la ruta del archivo para PowerShell
+    $archivoRutaEscapada = str_replace('\\', '\\\\', $archivoRuta);
+    
+    $script = "# ============================================\n";
+    $script .= "#  Script para enviar archivo a todas las PCs\n";
+    $script .= "#  Sin pedir credenciales (usa XML cifrado)\n";
+    $script .= "# ============================================\n";
+    $script .= "# Archivo: $nombreArchivo\n";
+    $script .= "# Destino: $salon\n\n";
+    
+    $script .= "# Cargar credenciales almacenadas\n";
+    $script .= "\$cred = Import-Clixml -Path \"C:\\credenciales_alumno.xml\"\n\n";
+    
+    $script .= "# Ruta del archivo a enviar\n";
+    $script .= "\$archivo = \"$archivoRutaEscapada\"\n\n";
+    
+    $script .= "# Verificar que el archivo existe\n";
+    $script .= "if (-not (Test-Path \$archivo)) {\n";
+    $script .= "    Write-Host \"❌ Error: El archivo no existe en la ruta especificada: \$archivo\" -ForegroundColor Red\n";
+    $script .= "    exit 1\n";
+    $script .= "}\n\n";
+    
+    $script .= "# Lista de PCs destino\n";
+    $script .= "\$pcs = @(\n";
+    foreach ($computers as $pc) {
+        $script .= "    @{ Nombre = \"$pc\" },\n";
+    }
+    $script .= ")\n\n";
+    
+    $script .= "\$successCount = 0\n";
+    $script .= "\$failCount = 0\n\n";
+    
+    $script .= "foreach (\$pc in \$pcs) {\n";
+    $script .= "    Write-Host \"`nConectando a \$(\$pc.Nombre)...\" -ForegroundColor Cyan\n";
+    $script .= "    try {\n";
+    $script .= "        # Crear sesión remota\n";
+    $script .= "        \$s = New-PSSession -ComputerName \$pc.Nombre -Credential \$cred -ErrorAction Stop\n";
+    $script .= "        Write-Host \"Copiando archivo a \$(\$pc.Nombre)...\" -ForegroundColor Yellow\n";
+    $script .= "        \n";
+    $script .= "        # Copiar archivo al Escritorio del alumno\n";
+        $nombreDestino = addslashes($nombreArchivo);
+        $script .= "        Copy-Item -Path \$archivo -Destination \"C:\\Users\\alumno\\Desktop\\$nombreDestino\" -ToSession \$s -Force\n";
+    $script .= "        \n";
+    $script .= "        # Cerrar sesión\n";
+    $script .= "        Remove-PSSession \$s\n";
+    $script .= "        Write-Host \"✓ Archivo enviado a \$(\$pc.Nombre)\" -ForegroundColor Green\n";
+    $script .= "        \$successCount++\n";
+    $script .= "    }\n";
+    $script .= "    catch {\n";
+    $script .= "        Write-Host \"❌ Error con \$(\$pc.Nombre): \$(\$_.Exception.Message)\" -ForegroundColor Red\n";
+    $script .= "        \$failCount++\n";
+    $script .= "    }\n";
+    $script .= "}\n\n";
+    
+    $script .= "Write-Host \"`n=== RESUMEN ===\" -ForegroundColor Cyan\n";
+    $script .= "Write-Host \"Archivos enviados exitosamente: \$successCount\" -ForegroundColor Green\n";
+    $script .= "Write-Host \"Archivos fallidos: \$failCount\" -ForegroundColor Red\n";
+    $script .= "Write-Host \"Total de computadoras: \$(\$pcs.Count)\" -ForegroundColor Yellow\n";
+    $script .= "Write-Host \"`nProceso completado.\" -ForegroundColor Cyan\n";
+    
+    return $script;
 }
 
 // --- FUNCIÓN DE HISTORIAL (Acción: get_history) ---
@@ -612,7 +766,7 @@ function generatePowerShellScript($data) {
 function generateInstallationScript($softwareName, $fileName, $salon, $solicitudId = null) {
     // Mapeo de salones a rangos de IP o nombres de computadoras
     $salonComputers = [
-        'Aula 1' => ['PC-AULA1-01', 'PC-AULA1-02', 'PC-AULA1-03', 'PC-AULA1-04', 'PC-AULA1-05'],
+        'Aula 1' => ['PC-AULA1-01', 'PC-AULA1-02', 'PC-AULA1-03'],
         'Aula 2' => ['PC-AULA2-01', 'PC-AULA2-02', 'PC-AULA2-03', 'PC-AULA2-04', 'PC-AULA2-05'],
         'Aula 3' => ['PC-AULA3-01', 'PC-AULA3-02', 'PC-AULA3-03', 'PC-AULA3-04', 'PC-AULA3-05'],
         'Aula 4' => ['PC-AULA4-01', 'PC-AULA4-02', 'PC-AULA4-03', 'PC-AULA4-04', 'PC-AULA4-05'],
@@ -737,6 +891,33 @@ function generateInstallationScript($softwareName, $fileName, $salon, $solicitud
 function executePowerShellScript($data) {
     $conn = connectDB();
     
+    // VALIDACIÓN: Solo administradores (Ingeniero) pueden ejecutar scripts
+    if (!isset($data['username'])) {
+        http_response_code(400);
+        echo json_encode(["error" => "Se requiere el nombre de usuario para ejecutar scripts"]);
+        return;
+    }
+    
+    $username = $conn->real_escape_string($data['username']);
+    
+    // Verificar que el usuario existe y es administrador (Ingeniero)
+    $userCheckSql = "SELECT cargo FROM usuarios WHERE username = '$username'";
+    $userResult = $conn->query($userCheckSql);
+    
+    if (!$userResult || $userResult->num_rows === 0) {
+        http_response_code(404);
+        echo json_encode(["error" => "Usuario no encontrado"]);
+        return;
+    }
+    
+    $user = $userResult->fetch_assoc();
+    
+    if ($user['cargo'] !== 'Ingeniero') {
+        http_response_code(403);
+        echo json_encode(["error" => "Solo los administradores (Ingenieros) pueden ejecutar scripts de instalación"]);
+        return;
+    }
+    
     $id = intval($data['id']);
     
     // Obtener el script de la base de datos
@@ -815,18 +996,21 @@ if (isset($_GET['action'])) {
             exit;
         }
         
+        // Manejar distribución de documentos que usa FormData (multipart/form-data)
+        if ($action === 'distribute') {
+            handleDistribution();
+            exit;
+        }
+        
         $data = json_decode(file_get_contents('php://input'), true);
         
-        if (empty($data) && $action !== 'delete_user') {
+        if ($action === 'login') {
+            // Para login, permitir datos vacíos y dejar que handleLogin valide
+            handleLogin($data ?? []);
+        } elseif (empty($data) && $action !== 'delete_user') {
             http_response_code(400);
             echo json_encode(["error" => "Datos POST no válidos."]);
             exit;
-        }
-
-        if ($action === 'login') {
-            handleLogin($data);
-        } elseif ($action === 'distribute') {
-            handleDistribution($data);
         } elseif ($action === 'create_user') {
             createUser($data);
         } elseif ($action === 'update_user') {

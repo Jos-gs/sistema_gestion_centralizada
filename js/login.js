@@ -1,6 +1,19 @@
 // Archivo: js/login.js (FINAL - Envía el nombre en la redirección)
 
-document.getElementById('login-form').addEventListener('submit', attemptLogin);
+// Asegurar que el DOM esté listo antes de registrar el evento
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', attemptLogin);
+        }
+    });
+} else {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', attemptLogin);
+    }
+}
 
 function showLoadingAnimation() {
     const inputs = document.querySelectorAll('.input-group input');
@@ -30,12 +43,29 @@ async function attemptLogin(event) {
     showLoadingAnimation();
 
     try {
+        const loginData = { username: username.trim(), password: password };
+        console.log('Enviando datos de login:', { username: loginData.username, password: '***' });
+        
         const response = await fetch(`${API_SERVER_ENDPOINT}?action=login`, { 
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify({ username, password }) 
+            body: JSON.stringify(loginData) 
         });
-        const result = await response.json();
+        
+        console.log('Respuesta del servidor - Status:', response.status);
+        
+        let result;
+        try {
+            const responseText = await response.text();
+            console.log('Respuesta del servidor - Texto:', responseText);
+            result = JSON.parse(responseText);
+        } catch (jsonError) {
+            console.error('Error al parsear JSON:', jsonError);
+            errorMsg.innerText = `Error del servidor. No se pudo procesar la respuesta.`;
+            errorMsg.classList.remove('hidden');
+            loginBtn.style.backgroundColor = '#e74c3c';
+            return;
+        }
 
         if (response.ok) {
             loginBtn.innerText = "¡Éxito!";
@@ -56,7 +86,8 @@ async function attemptLogin(event) {
             loginBtn.style.backgroundColor = '#e74c3c';
         }
     } catch (error) {
-        errorMsg.innerText = `Error de conexión. Asegúrese que el servidor esté activo.`;
+        console.error('Error en login:', error);
+        errorMsg.innerText = `Error de conexión. Asegúrese que el servidor esté activo. Error: ${error.message}`;
         errorMsg.classList.remove('hidden');
         loginBtn.style.backgroundColor = '#e74c3c';
     } finally {
