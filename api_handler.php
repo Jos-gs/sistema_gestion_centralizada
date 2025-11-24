@@ -148,15 +148,40 @@ function handleDistribution() {
 
 // --- Función para generar script PowerShell de distribución ---
 function generateDistributionScript($archivoRuta, $nombreArchivo, $salon) {
-    // Mapeo de salones a nombres de PCs
+    // Mapeo de salones a IPs de PCs
     $salonComputers = [
-        'Aula 1' => ['PC1', 'PC2', 'PC3', 'PC4'],
-        'Aula 2' => ['PC1', 'PC2', 'PC3', 'PC4'],
-        'Aula 3' => ['PC1', 'PC2', 'PC3', 'PC4'],
-        'Aula 4' => ['PC1', 'PC2', 'PC3', 'PC4']
+        'Aula 1' => [
+            ['name' => 'PC1', 'ip' => '169.254.155.179'],
+            ['name' => 'PC2', 'ip' => '169.254.240.139'],
+            ['name' => 'PC3', 'ip' => '169.254.240.141'],
+            ['name' => 'PC4', 'ip' => '169.254.31.179']
+        ],
+        'Aula 2' => [
+            ['name' => 'PC1', 'ip' => '169.254.155.179'],
+            ['name' => 'PC2', 'ip' => '169.254.240.139'],
+            ['name' => 'PC3', 'ip' => '169.254.240.141'],
+            ['name' => 'PC4', 'ip' => '169.254.31.179']
+        ],
+        'Aula 3' => [
+            ['name' => 'PC1', 'ip' => '169.254.155.179'],
+            ['name' => 'PC2', 'ip' => '169.254.240.139'],
+            ['name' => 'PC3', 'ip' => '169.254.240.141'],
+            ['name' => 'PC4', 'ip' => '169.254.31.179']
+        ],
+        'Aula 4' => [
+            ['name' => 'PC1', 'ip' => '169.254.155.179'],
+            ['name' => 'PC2', 'ip' => '169.254.240.139'],
+            ['name' => 'PC3', 'ip' => '169.254.240.141'],
+            ['name' => 'PC4', 'ip' => '169.254.31.179']
+        ]
     ];
     
-    $computers = isset($salonComputers[$salon]) ? $salonComputers[$salon] : ['PC1', 'PC2', 'PC3', 'PC4'];
+    $computers = isset($salonComputers[$salon]) ? $salonComputers[$salon] : [
+        ['name' => 'PC1', 'ip' => '169.254.155.179'],
+        ['name' => 'PC2', 'ip' => '169.254.240.139'],
+        ['name' => 'PC3', 'ip' => '169.254.240.141'],
+        ['name' => 'PC4', 'ip' => '169.254.31.179']
+    ];
     
     // Escapar la ruta del archivo para PowerShell
     $archivoRutaEscapada = str_replace('\\', '\\\\', $archivoRuta);
@@ -180,10 +205,12 @@ function generateDistributionScript($archivoRuta, $nombreArchivo, $salon) {
     $script .= "    exit 1\n";
     $script .= "}\n\n";
     
-    $script .= "# Lista de PCs destino\n";
+    $script .= "# Lista de PCs destino con sus IPs\n";
     $script .= "\$pcs = @(\n";
     foreach ($computers as $pc) {
-        $script .= "    @{ Nombre = \"$pc\" },\n";
+        $pcName = $pc['name'];
+        $pcIp = $pc['ip'];
+        $script .= "    @{ Nombre = \"$pcName\"; IP = \"$pcIp\" },\n";
     }
     $script .= ")\n\n";
     
@@ -191,10 +218,10 @@ function generateDistributionScript($archivoRuta, $nombreArchivo, $salon) {
     $script .= "\$failCount = 0\n\n";
     
     $script .= "foreach (\$pc in \$pcs) {\n";
-    $script .= "    Write-Host \"`nConectando a \$(\$pc.Nombre)...\" -ForegroundColor Cyan\n";
+    $script .= "    Write-Host \"`nConectando a \$(\$pc.Nombre) (\$(\$pc.IP))...\" -ForegroundColor Cyan\n";
     $script .= "    try {\n";
-    $script .= "        # Crear sesión remota\n";
-    $script .= "        \$s = New-PSSession -ComputerName \$pc.Nombre -Credential \$cred -ErrorAction Stop\n";
+    $script .= "        # Crear sesión remota usando la IP\n";
+    $script .= "        \$s = New-PSSession -ComputerName \$pc.IP -Credential \$cred -ErrorAction Stop\n";
     $script .= "        Write-Host \"Copiando archivo a \$(\$pc.Nombre)...\" -ForegroundColor Yellow\n";
     $script .= "        \n";
     $script .= "        # Copiar archivo al Escritorio del alumno\n";
@@ -979,6 +1006,53 @@ function executePowerShellScript($data) {
 }
 
 
+// --- Acción: test_connection (PROBAR CONEXIÓN A PCs) ---
+function testConnection() {
+    header('Content-Type: application/json');
+    
+    // Lista de PCs con sus IPs correspondientes
+    $pcs = [
+        ['name' => 'PC1', 'ip' => '169.254.155.179'],
+        ['name' => 'PC2', 'ip' => '169.254.240.139'],
+        ['name' => 'PC3', 'ip' => '169.254.240.141'],
+        ['name' => 'PC4', 'ip' => '169.254.31.179']
+    ];
+    
+    $results = [];
+    
+    foreach ($pcs as $pc) {
+        $pcName = $pc['name'];
+        $pcIp = $pc['ip'];
+        $startTime = microtime(true);
+        
+        // Probar conexión usando PowerShell Test-Connection
+        $command = "powershell.exe -Command \"Test-Connection -ComputerName '$pcIp' -Count 1 -Quiet -ErrorAction SilentlyContinue\"";
+        exec($command, $output, $returnCode);
+        
+        $endTime = microtime(true);
+        $responseTime = round(($endTime - $startTime) * 1000); // Convertir a milisegundos
+        
+        $isOnline = false;
+        if (!empty($output)) {
+            // PowerShell devuelve "True" o "False" como string
+            $isOnline = (trim($output[0]) === 'True' || $returnCode === 0);
+        }
+        
+        $results[] = [
+            'name' => $pcName,
+            'ip' => $pcIp,
+            'status' => $isOnline ? 'online' : 'offline',
+            'response_time' => $isOnline ? $responseTime : null
+        ];
+    }
+    
+    http_response_code(200);
+    echo json_encode([
+        "message" => "Prueba de conexión completada",
+        "data" => $results
+    ]);
+}
+
 // ===============================================
 // === 3. PUNTO DE ENTRADA API (ROUTING) ===
 // ===============================================
@@ -1027,6 +1101,8 @@ if (isset($_GET['action'])) {
             generatePowerShellScript($data);
         } elseif ($action === 'execute_powershell_script') {
             executePowerShellScript($data);
+        } elseif ($action === 'test_connection') {
+            testConnection();
         } else {
             http_response_code(404);
             echo json_encode(["error" => "Acción API no encontrada."]);

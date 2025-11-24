@@ -1,6 +1,12 @@
 // Archivo: js/admin.js (FINAL - Corregido el error de addEventListener)
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Aplicar modo oscuro si está guardado
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+    }
+    
     // Cargar la sección de registros por defecto
     loadContent('registers'); 
     
@@ -56,6 +62,8 @@ function loadContent(view) {
         renderConsultas();
     } else if (view === 'ia') {
         renderIAInstalaciones();
+    } else if (view === 'settings') {
+        renderSettings();
     } else {
         mainContent.innerHTML = `
             <h2>${view.charAt(0).toUpperCase() + view.slice(1)}</h2>
@@ -911,4 +919,156 @@ async function handleViewResult(id) {
 
 function handleDownloadFile(id) {
     window.open(`${API_ENDPOINT}?action=download_installation_file&id=${id}`, '_blank');
+}
+
+// ===========================================
+// === 5. CONFIGURACIÓN (SETTINGS VIEW) ===
+// ===========================================
+
+function renderSettings() {
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    
+    mainContent.innerHTML = `
+        <h2>⚙️ Configuración del Sistema</h2>
+        
+        <div class="settings-container">
+            <!-- Modo Oscuro -->
+            <div class="settings-section">
+                <h3>🌙 Apariencia</h3>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <label>Modo Oscuro</label>
+                        <p class="setting-description">Activa el tema oscuro para una mejor experiencia visual</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle" ${isDarkMode ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Prueba de Conexión -->
+            <div class="settings-section">
+                <h3>🔌 Prueba de Conexión</h3>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <label>Probar Conexión a PCs</label>
+                        <p class="setting-description">Verifica la conectividad con las computadoras de las aulas</p>
+                    </div>
+                    <button class="test-connection-btn" onclick="testPCConnection()">
+                        <span>🔍 Probar Conexión</span>
+                    </button>
+                </div>
+                
+                <div id="connection-results" class="connection-results" style="display: none;">
+                    <h4>Resultados de la Prueba:</h4>
+                    <div id="connection-status"></div>
+                </div>
+            </div>
+
+            <!-- Información del Sistema -->
+            <div class="settings-section">
+                <h3>ℹ️ Información del Sistema</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Versión del Sistema:</span>
+                        <span class="info-value">v1.0.0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Última Actualización:</span>
+                        <span class="info-value">${new Date().toLocaleDateString('es-ES')}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Inicializar modo oscuro si está activado
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+    }
+    
+    // Listener para el toggle de modo oscuro
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('change', function() {
+            toggleDarkMode(this.checked);
+        });
+    }
+}
+
+function toggleDarkMode(enabled) {
+    if (enabled) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('darkMode', 'true');
+    } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('darkMode', 'false');
+    }
+}
+
+async function testPCConnection() {
+    const resultsDiv = document.getElementById('connection-results');
+    const statusDiv = document.getElementById('connection-status');
+    const testBtn = event.target.closest('.test-connection-btn');
+    
+    if (!resultsDiv || !statusDiv) return;
+    
+    // Mostrar contenedor de resultados
+    resultsDiv.style.display = 'block';
+    statusDiv.innerHTML = '<p style="color: #3498db;">🔄 Probando conexión...</p>';
+    testBtn.disabled = true;
+    testBtn.innerHTML = '<span>⏳ Probando...</span>';
+    
+    try {
+        const response = await fetch(`${API_ENDPOINT}?action=test_connection`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.data) {
+            let html = '<div class="connection-list">';
+            let successCount = 0;
+            let failCount = 0;
+            
+            result.data.forEach(pc => {
+                const isOnline = pc.status === 'online';
+                if (isOnline) successCount++;
+                else failCount++;
+                
+                html += `
+                    <div class="connection-item ${isOnline ? 'online' : 'offline'}">
+                        <div class="connection-icon">
+                            ${isOnline ? '✅' : '❌'}
+                        </div>
+                        <div class="connection-details">
+                            <strong>${pc.name}</strong>
+                            <span class="connection-ip">${pc.ip}</span>
+                            <span class="connection-status-text">${isOnline ? 'En línea' : 'Sin conexión'}</span>
+                            ${pc.response_time ? `<span class="response-time">${pc.response_time}ms</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            html += `<div class="connection-summary">
+                <p><strong>Total:</strong> ${result.data.length} PCs | 
+                <span style="color: #27ae60;">✅ ${successCount} en línea</span> | 
+                <span style="color: #e74c3c;">❌ ${failCount} sin conexión</span></p>
+            </div>`;
+            
+            statusDiv.innerHTML = html;
+        } else {
+            statusDiv.innerHTML = `<p style="color: #e74c3c;">❌ Error: ${result.error || 'No se pudo probar la conexión'}</p>`;
+        }
+    } catch (error) {
+        statusDiv.innerHTML = `<p style="color: #e74c3c;">❌ Error de conexión: ${error.message}</p>`;
+    } finally {
+        testBtn.disabled = false;
+        testBtn.innerHTML = '<span>🔍 Probar Conexión</span>';
+    }
 }
